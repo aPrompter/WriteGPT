@@ -31,3 +31,168 @@ writeMore是一款智能写作软件。使用OpenAI提供的api，作为底层�
 创建完成并测试环境是否正常
 
 ![创建完成](./img/createProject3.png)
+
+## 使用GPT开发
+
+### 实现基础文本生成功能
+
+> prompt:
+>
+> 现在，你是一位资深的软件开发工程师，而我是一位产品经理。我会给你提出产品需求，你帮我使用python代码实现。 
+>
+> 我的第一个需求是： 
+>
+> 使用python开发一个桌面应用程序。该程序是一款AI写作软件，基于OpenAI提供的api能力，做到输入框输入提示词，点击确认按钮后，后台调用api获取ai生成的文本，然后在另一个文本框输出。 要求使用OpenAI公司提供的python库openai。
+
+> GPT:
+>
+> 为了实现这个需求，我们可以使用`Tkinter`库创建一个简单的桌面应用程序，结合`openai`库调用OpenAI的API。首先，请确保你已经安装了`openai`库，使用以下命令安装：
+>
+> ``` shell
+> pip install openai
+> ```
+>
+> 接下来，我们将创建一个简单的桌面应用程序，包含一个输入框、一个按钮和一个输出框：
+>
+> ``` python
+> import tkinter as tk
+> import openai
+> 
+> # 配置OpenAI API密钥
+> openai.api_key = "your_api_key"
+> 
+> # 定义一个函数，当点击按钮时调用OpenAI API
+> def generate_text():
+>     prompt = input_box.get()
+>     if prompt.strip() != "":
+>         response = openai.Completion.create(
+>             engine="davinci-codex",
+>             prompt=prompt,
+>             max_tokens=100,
+>             n=1,
+>             stop=None,
+>             temperature=0.5,
+>         )
+>         output_text = response.choices[0].text
+>         output_box.delete(1.0, tk.END)
+>         output_box.insert(tk.END, output_text)
+> 
+> # 创建一个Tkinter窗口
+> root = tk.Tk()
+> root.title("AI写作软件")
+> root.geometry("800x600")
+> 
+> # 创建输入框
+> input_box = tk.Entry(root, width=80)
+> input_box.pack(pady=10)
+> 
+> # 创建确认按钮
+> confirm_button = tk.Button(root, text="生成文本", command=generate_text)
+> confirm_button.pack(pady=10)
+> 
+> # 创建输出框
+> output_box = tk.Text(root, wrap=tk.WORD, width=80, height=20)
+> output_box.pack(pady=10)
+> 
+> # 启动Tkinter事件循环
+> root.mainloop()
+> 
+> ```
+>
+> 在这段代码中，我们定义了一个`generate_text`函数，该函数从输入框获取提示词并调用OpenAI API生成文本。然后，这个函数将生成的文本插入到输出框中。
+>
+> 请注意，您需要将`your_api_key`替换为您的实际OpenAI API密钥。此外，您可能需要根据实际情况调整API调用参数，例如引擎、最大令牌数等。
+>
+> 这个简单的桌面应用程序应该满足您的需求。如果您需要进一步自定义，请随时在此基础上进行修改。
+
+GPT给出的代码中，需要我们手动设置API key
+
+我们可以到[OpenAI官网](https://platform.openai.com/account/api-keys)申请一个key。
+
+将openai.api_key = "your_api_key"的your_api_key替换为自己的api key后，我们尝试执行一下。
+
+初次运行使用，在调用Open AI的接口时失败了
+
+![error1](./img/error1.png)
+
+我们将报错信息交给GPT处理一下
+
+> GPT:
+> 抱歉给您带来了困扰。看起来问题出在使用的模型名称“davinci-codex”上。请使用有效的模型名称，例如 "text-davinci-002"。请将代码中的以下部分：
+>
+> ``` python
+> response = openai.Completion.create(
+>     engine="davinci-codex",
+>     prompt=prompt,
+>     max_tokens=100,
+>     n=1,
+>     stop=None,
+>     temperature=0.5,
+> )
+> ```
+>
+> 替换为：
+>
+> ``` python
+> response = openai.Completion.create(
+>     engine="text-davinci-002",
+>     prompt=prompt,
+>     max_tokens=100,
+>     n=1,
+>     stop=None,
+>     temperature=0.5,
+> )
+> ```
+>
+> 更新模型名称后，程序应该可以正常运行。如果您遇到其他问题，请随时告诉我。
+
+GPT指出是模型的名称问题。我们可以根据自己的需要选择具体的模型，模型清单可以访问[官网地址](https://platform.openai.com/docs/models/gpt-3-5)。
+
+在本项目中，我们选择更强大的文本模型`text-davinci-003`。
+
+接下来试试效果
+
+![第一次成功](./img/firstSuccess.png)
+
+基础的功能已经实现了，但给出的文本内容很少。我们再要求GPT帮我们优化下
+
+> prompt:
+> 现在可以正常运行了，但是模型给出的文本内容很少，不是一篇完整的文章，请帮我继续优化，让文章能完整的输出
+
+> GPT:
+>
+> 我明白您的需求。为了生成更长的文本，我们可以增加`max_tokens`参数的值，同时，我们可以通过调整`temperature`参数来影响生成文本的随机性。数值越小，输出结果越确定性，数值越大，结果越随机。此外，为了确保文章结构的完整性，我们可以在`stop`参数中设置一个终止符，例如句号或者换行符。以下是修改后的`generate_text`函数：
+>
+> ``` python
+> def generate_text():
+>     prompt = input_box.get()
+>     if prompt.strip() != "":
+>         response = openai.Completion.create(
+>             engine="text-davinci-002",
+>             prompt=prompt,
+>             max_tokens=500,  # 增加最大令牌数
+>             n=1,
+>             stop=["\n"],  # 设置终止符
+>             temperature=0.7,  # 调整temperature参数
+>         )
+>         output_text = response.choices[0].text
+>         output_box.delete(1.0, tk.END)
+>         output_box.insert(tk.END, output_text)
+> ```
+>
+> 在此示例中，我们将`max_tokens`参数设置为500，这将允许模型生成更长的文本。同时，我们将`temperature`参数调整为0.7，以获得一个适度的随机性。最后，我们将终止符设置为换行符，以确保生成的文章更具完整性。
+>
+> 请注意，生成更长文本可能会增加API调用的时间。此外，如果您发现生成的文本仍然不够长或太长，可以继续调整`max_tokens`参数。如果您需要进一步优化，请随时告诉我。
+
+GPT告诉我们，可以通过调整max_tokens参数，增加内容输出长度。
+
+我们可以在官网查到，最大的tokens，可以是4096。在这里，我们就不用GPT推荐的500，而直接用4000。
+
+![modelTokenMax](./img/modelTokenMax.png)
+
+修改后的结果是：
+
+![第二次成功](./img/secondSuccess.png)
+
+这样基础的文本生成功能就完成了。
+
