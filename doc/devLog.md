@@ -357,3 +357,290 @@ response = openai.Completion.create(
 ![文章修改结果](./img/articleFixResult2.png)
 
 可以看到，文本已经实现了使用GPT修改内容的功能了。
+
+### 添加模板生成文章
+
+> prompt: 现在，你是一位资深的软件开发工程师，而我是一位产品经理。
+>
+> 我会给你提出产品需求，你帮我使用python代码实现。 
+>
+> 在上述的代码中添加新的需求 新需求是为了解决，每次写文章都需要重新构建prompt的问题 我希望可以将prompt复用，每次只需要填写可替换的关键信息就行了。
+>
+>  prompt的复用，通过导入模板实现，模板文件是json文件。
+>
+> 模板格式： { “type1":"value1", "type2":"value2" } 
+>
+> 现在我需要你做的事情是。 添加选择模板，导入模板，导出模板三个功能的按钮，平行放在输入框上方。 
+>
+> 点击按钮后，弹出一个悬浮框。 
+>
+> 选择模板点击后，悬浮框内有一个下拉框，下拉框选中了文章类型后，将对应的模板value放入输入框中。 
+>
+> 导入模板按钮点击后，导入.json文件并解析。
+>
+> 要求在下一次打开应用，还能通过选择模板使用
+>
+>  导出模板按钮点击后，导出.json文件 当应用第一次使用的时候，是没有模板的。
+>
+> 选择模板按钮点击后，提示用户没有模板。
+
+> GPT:
+>
+> 根据您的需求，我已经更新了代码以支持模板功能。现在有三个新按钮：选择模板，导入模板和导出模板。您可以使用这些按钮来处理模板。以下是完整的代码：
+>
+> ```python
+> import tkinter as tk
+> from tkinter import filedialog, messagebox
+> import openai
+> import json
+> 
+> openai.api_key = "your_api_key"
+> 
+> templates = {}
+> 
+> def load_templates():
+>     try:
+>         with open('templates.json', 'r') as f:
+>             return json.load(f)
+>     except FileNotFoundError:
+>         return {}
+> 
+> def save_templates():
+>     with open('templates.json', 'w') as f:
+>         json.dump(templates, f)
+> 
+> def choose_template():
+>     if templates:
+>         template_types = list(templates.keys())
+>         selected_type = tk.StringVar(root)
+>         selected_type.set(template_types[0])
+> 
+>         def apply_template():
+>             template = templates[selected_type.get()]
+>             input_box.delete(0, tk.END)
+>             input_box.insert(0, template)
+>             template_dialog.destroy()
+> 
+>         template_dialog = tk.Toplevel(root)
+>         template_dialog.title("选择模板")
+> 
+>         tk.Label(template_dialog, text="选择模板：").pack(pady=5)
+>         tk.OptionMenu(template_dialog, selected_type, *template_types).pack(pady=5)
+>         tk.Button(template_dialog, text="应用模板", command=apply_template).pack(pady=5)
+>     else:
+>         messagebox.showerror("错误", "没有模板可供选择，请先导入模板。")
+> 
+> def import_template():
+>     file_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+>     if file_path:
+>         with open(file_path, 'r') as f:
+>             new_templates = json.load(f)
+>         templates.update(new_templates)
+>         save_templates()
+>         messagebox.showinfo("成功", "模板已成功导入。")
+> 
+> def export_template():
+>     file_path = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+>     if file_path:
+>         with open(file_path, 'w') as f:
+>             json.dump(templates, f)
+>         messagebox.showinfo("成功", "模板已成功导出。")
+> 
+> templates = load_templates()
+> 
+> root = tk.Tk()
+> root.title("AI写作软件")
+> root.geometry("800x600")
+> 
+> template_buttons = tk.Frame(root)
+> template_buttons.pack(pady=5)
+> 
+> choose_template_button = tk.Button(template_buttons, text="选择模板", command=choose_template)
+> choose_template_button.pack(side=tk.LEFT, padx=5)
+> 
+> import_template_button = tk.Button(template_buttons, text="导入模板", command=import_template)
+> import_template_button.pack(side=tk.LEFT, padx=5)
+> 
+> export_template_button = tk.Button(template_buttons, text="导出模板", command=export_template)
+> export_template_button.pack(side=tk.LEFT, padx=5)
+> 
+> input_box = tk.Entry(root, width=80)
+> input_box.pack(pady=10)
+> 
+> confirm_button = tk.Button(root, text="生成文本", command=generate_text)
+> confirm_button.pack(pady=10)
+> 
+> output_box = tk.Text(root, wrap=tk.WORD, width=80, height=20)
+> output_box.pack(pady=10)
+> output_box.bind('<Control-Key>', edit_text)
+> 
+> root.mainloop()
+> ```
+>
+> 这个代码应该符合您的需求。请注意，您需要确保在运行该程序的文件夹中有一个名为`templates.json`的文件，用于存储导入的模板。如果您在打开应用程序时
+
+在给出的代码中，没有加上之前的功能。我们需要对代码进行一个拼接。
+
+最终的代码是：
+``` python
+import tkinter as tk
+from tkinter.simpledialog import askstring
+from tkinter import filedialog, messagebox
+import openai
+import json
+
+openai.api_key = "your_api_key"
+
+
+def load_templates():
+    try:
+        with open('templates.json', 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+
+def save_templates():
+    with open('templates.json', 'w') as f:
+        json.dump(templates, f)
+
+
+def choose_template():
+    if templates:
+        template_types = list(templates.keys())
+        selected_type = tk.StringVar(root)
+        selected_type.set(template_types[0])
+
+        def apply_template():
+            template = templates[selected_type.get()]
+            input_box.delete(0, tk.END)
+            input_box.insert(0, template)
+            template_dialog.destroy()
+
+        template_dialog = tk.Toplevel(root)
+        template_dialog.title("选择模板")
+
+        tk.Label(template_dialog, text="选择模板：").pack(pady=5)
+        tk.OptionMenu(template_dialog, selected_type, *template_types).pack(pady=5)
+        tk.Button(template_dialog, text="应用模板", command=apply_template).pack(pady=5)
+    else:
+        messagebox.showerror("错误", "没有模板可供选择，请先导入模板。")
+
+
+def import_template():
+    file_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+    if file_path:
+        with open(file_path, 'r') as f:
+            new_templates = json.load(f)
+        templates.update(new_templates)
+        save_templates()
+        messagebox.showinfo("成功", "模板已成功导入。")
+
+
+def export_template():
+    file_path = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+    if file_path:
+        with open(file_path, 'w') as f:
+            json.dump(templates, f)
+        messagebox.showinfo("成功", "模板已成功导出。")
+
+
+templates = load_templates()
+
+
+def generate_text():
+    prompt = input_box.get()
+    if prompt.strip() != "":
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=4000,
+            n=1,
+            stop=None,
+            temperature=0.7,
+        )
+        output_text = response.choices[0].text
+        output_box.delete(1.0, tk.END)
+        output_box.insert(tk.END, output_text)
+
+
+def edit_text(event):
+    ctrl_pressed = event.state & 0x4  # 检查Ctrl键是否按下
+    if ctrl_pressed and event.keysym == 'q':  # 检查是否按下了Ctrl + Q
+        selected_text = output_box.get(tk.SEL_FIRST, tk.SEL_LAST)
+        if selected_text:
+            suggestion = askstring("修改建议", "请输入修改意见：")
+            if suggestion:
+                prompt = f"{selected_text} -> {suggestion}"
+                print(f"{selected_text} -> {suggestion}")
+                response = openai.Completion.create(
+                    engine="text-davinci-003",
+                    prompt=prompt,
+                    max_tokens=4000 - len(prompt),
+                    n=1,
+                    stop=None,
+                    temperature=0.7,
+                )
+                new_text = response.choices[0].text
+                if tk.messagebox.askyesno("替换确认", f"原文本：{selected_text}\n新文本：{new_text}\n是否替换？"):
+                    output_box.delete(tk.SEL_FIRST, tk.SEL_LAST)
+                    output_box.insert(tk.INSERT, new_text)
+
+
+root = tk.Tk()
+root.title("AI写作软件")
+root.geometry("800x600")
+
+template_buttons = tk.Frame(root)
+template_buttons.pack(pady=5)
+
+choose_template_button = tk.Button(template_buttons, text="选择模板", command=choose_template)
+choose_template_button.pack(side=tk.LEFT, padx=5)
+
+import_template_button = tk.Button(template_buttons, text="导入模板", command=import_template)
+import_template_button.pack(side=tk.LEFT, padx=5)
+
+export_template_button = tk.Button(template_buttons, text="导出模板", command=export_template)
+export_template_button.pack(side=tk.LEFT, padx=5)
+
+input_box = tk.Entry(root, width=80)
+input_box.pack(pady=10)
+
+confirm_button = tk.Button(root, text="生成文本", command=generate_text)
+confirm_button.pack(pady=10)
+
+output_box = tk.Text(root, wrap=tk.WORD, width=80, height=20)
+output_box.pack(pady=10)
+output_box.bind('<Control-Key>', edit_text)
+
+root.mainloop()
+
+```
+
+首先我们设置一个模板文件a.json，内容如下：
+``` json
+{
+    "读后感":"请写一篇读后感，书名是{书名}，作者是{作者}，字数要求{字数}"
+}
+```
+
+之后运行程序
+
+**先导入模板**
+
+![加载模板](./img/loadJsonFile.png)
+
+**选择模板**
+
+![选择模板](./img/chooseTemplate.png)
+
+![选择模板结果](.\img\chooseTempalteResult.png)
+
+替换输入框中大括号包括的词。
+
+![替换词语](./img/templateResult.png)
+
+可以看到，模板功能完成了
+
+
+

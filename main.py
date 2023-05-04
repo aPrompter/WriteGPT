@@ -1,9 +1,66 @@
 import tkinter as tk
 from tkinter.simpledialog import askstring
-import tkinter.messagebox
+from tkinter import filedialog, messagebox
 import openai
+import json
 
-openai.api_key = "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"
+openai.api_key = "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"
+
+
+def load_templates():
+    try:
+        with open('templates.json', 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+
+def save_templates():
+    with open('templates.json', 'w') as f:
+        json.dump(templates, f)
+
+
+def choose_template():
+    if templates:
+        template_types = list(templates.keys())
+        selected_type = tk.StringVar(root)
+        selected_type.set(template_types[0])
+
+        def apply_template():
+            template = templates[selected_type.get()]
+            input_box.delete(0, tk.END)
+            input_box.insert(0, template)
+            template_dialog.destroy()
+
+        template_dialog = tk.Toplevel(root)
+        template_dialog.title("选择模板")
+
+        tk.Label(template_dialog, text="选择模板：").pack(pady=5)
+        tk.OptionMenu(template_dialog, selected_type, *template_types).pack(pady=5)
+        tk.Button(template_dialog, text="应用模板", command=apply_template).pack(pady=5)
+    else:
+        messagebox.showerror("错误", "没有模板可供选择，请先导入模板。")
+
+
+def import_template():
+    file_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+    if file_path:
+        with open(file_path, 'r') as f:
+            new_templates = json.load(f)
+        templates.update(new_templates)
+        save_templates()
+        messagebox.showinfo("成功", "模板已成功导入。")
+
+
+def export_template():
+    file_path = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+    if file_path:
+        with open(file_path, 'w') as f:
+            json.dump(templates, f)
+        messagebox.showinfo("成功", "模板已成功导出。")
+
+
+templates = load_templates()
 
 
 def generate_text():
@@ -48,6 +105,18 @@ def edit_text(event):
 root = tk.Tk()
 root.title("AI写作软件")
 root.geometry("800x600")
+
+template_buttons = tk.Frame(root)
+template_buttons.pack(pady=5)
+
+choose_template_button = tk.Button(template_buttons, text="选择模板", command=choose_template)
+choose_template_button.pack(side=tk.LEFT, padx=5)
+
+import_template_button = tk.Button(template_buttons, text="导入模板", command=import_template)
+import_template_button.pack(side=tk.LEFT, padx=5)
+
+export_template_button = tk.Button(template_buttons, text="导出模板", command=export_template)
+export_template_button.pack(side=tk.LEFT, padx=5)
 
 input_box = tk.Entry(root, width=80)
 input_box.pack(pady=10)
