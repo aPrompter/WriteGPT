@@ -91,7 +91,7 @@ def generate_text():
             response = openai.Completion.create(
                 engine="text-davinci-003",
                 prompt=prompt,
-                max_tokens=4000,
+                max_tokens=4000 - len(prompt.encode('utf-8')),
                 n=1,
                 stop=None,
                 temperature=0.7,
@@ -158,7 +158,7 @@ api_key_entry = ttk.Entry(api_key_frame, width=40)
 api_key_entry.pack(side=tk.LEFT, padx=5)
 api_key_entry.insert(0, openai.api_key)
 
-save_api_key_button = ttk.Button(api_key_frame, text="保存API密钥", command=save_api_key)
+save_api_key_button = ttk.Button(api_key_frame, text="确认API密钥", command=save_api_key)
 save_api_key_button.pack(side=tk.LEFT, padx=5)
 
 template_buttons = ttk.Frame(main_frame)
