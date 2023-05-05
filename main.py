@@ -5,7 +5,7 @@ import openai
 import json
 from docx import Document
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 
 def load_templates():
@@ -87,12 +87,11 @@ def edit_text(event):
         if selected_text:
             suggestion = askstring("修改建议", "请输入修改意见：")
             if suggestion:
-                prompt = f"{selected_text} -> {suggestion}"
-                print(f"{selected_text} -> {suggestion}")
+                prompt = f"原文本：'{selected_text}'\n修改意见：'{suggestion}'\n根据修改意见，生成一个新的文本片段："
                 response = openai.Completion.create(
                     engine="text-davinci-003",
                     prompt=prompt,
-                    max_tokens=4000 - len(prompt),
+                    max_tokens=4000 - len(prompt.encode('utf-8')),
                     n=1,
                     stop=None,
                     temperature=0.7,

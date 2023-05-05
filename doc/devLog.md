@@ -751,3 +751,110 @@ GPT这次给的代码，需要调整一下。
 ![word文件](./img/wordFile.png)
 
 可以看到，文件已经可以成功导出了。
+
+### 优化编辑能容的prompt
+
+现阶段有一个问题。
+
+使用ctrl+q实现的让模型再次修改内容，结果往往不行
+
+现在要求GPT优化prompt。
+
+> prompt:接下来的需求是，优化编辑文章时，通过api传输给GPT的prompt。 现在的prompt是：                prompt = f"{selected_text} -> {suggestion}" 模型给出的结果，往往不符合要求。 请给我一个更好的prompt，让模型根据suggestion，修改selected_text的内容。
+
+> GPT:
+> 为了让模型更好地理解任务，我们可以使用更明确的指示来构建prompt。这里是一个改进的prompt：
+>
+> ```python
+> prompt = f"原文本：'{selected_text}'\n修改意见：'{suggestion}'\n根据修改意见，生成一个新的文本片段："
+> ```
+>
+> 这个新的prompt首先给出原文本，然后给出修改意见，最后明确指示模型根据修改意见生成一个新的文本片段。这样的表述更有利于模型理解任务，从而生成更符合要求的结果。将这个新的prompt替换到原来的`edit_text`函数中即可。
+>
+> 以下是修改后的`edit_text`函数：
+>
+> ```python
+> def edit_text(event):
+>     ctrl_pressed = event.state & 0x4  # 检查Ctrl键是否按下
+>     if ctrl_pressed and event.keysym == 'q':  # 检查是否按下了Ctrl + Q
+>         selected_text = output_box.get(tk.SEL_FIRST, tk.SEL_LAST)
+>         if selected_text:
+>             suggestion = askstring("修改建议", "请输入修改意见：")
+>             if suggestion:
+>                 prompt = f"原文本：'{selected_text}'\n修改意见：'{suggestion}'\n根据修改意见，生成一个新的文本片段："
+>                 print(f"{selected_text} -> {suggestion}")
+>                 response = openai.Completion.create(
+>                     engine="text-davinci-003",
+>                     prompt=prompt,
+>                     max_tokens=4000 - len(prompt),
+>                     n=1,
+>                     stop=None,
+>                     temperature=0.7,
+>                 )
+>                 new_text = response.choices[0].text
+>                 if tk.messagebox.askyesno("替换确认", f"原文本：{selected_text}\n新文本：{new_text}\n是否替换？"):
+>                     output_box.delete(tk.SEL_FIRST, tk.SEL_LAST)
+>                     output_box.insert(tk.INSERT, new_text)
+> ```
+>
+> 通过这个优化，应该能够帮助模型更好地理解编辑任务，从而生成更符合要求的结果。
+
+把代码替换后，我们继续测试。
+
+![tokenLenError](./img/tokenLenError.png)
+
+结果由出现错误了。
+
+之前设置的，max_tokens=4000 - len(prompt)，还是不能把token限制在4097.
+
+> prompt:python中，有一个字符串变量。如何获取所占字节数量
+
+> GPT:要获取一个Python字符串变量所占的字节数量，可以使用Python内置函数 `len()` 和字符串对象的 `encode()` 方法。具体步骤如下：
+>
+> 1. 使用 `encode()` 方法将字符串转换为指定编码的字节序列，可以使用常见的编码方式如UTF-8或GBK等。
+> 2. 使用 `len()` 函数获取字节序列的长度，即为字符串变量所占的字节数量。
+>
+> 下面是一个示例代码，假设要获取字符串变量 `my_string` 在UTF-8编码下所占的字节数量：
+>
+> ```python
+> my_string = "这是一个字符串"
+> 
+> # 将字符串转换为UTF-8编码的字节序列
+> my_bytes = my_string.encode('utf-8')
+> 
+> # 获取字节序列的长度，即为字符串变量所占的字节数量
+> byte_count = len(my_bytes)
+> 
+> # 输出结果
+> print(f"String '{my_string}' occupies {byte_count} bytes in UTF-8 encoding.")
+> ```
+>
+> 上述代码将输出以下结果：
+>
+> ```
+> String '这是一个字符串' occupies 21 bytes in UTF-8 encoding.
+> ```
+>
+> 需要注意的是，不同的编码方式下，同一字符串变量所占的字节数量可能会不同。因此，在使用 `encode()` 方法时需要指定正确的编码方式，以确保得到正确的字节数量。
+
+GPT给出的方案是，使用encode方法将字符串转换为指定编码的字节序列。然后再计算字节序列的长度。
+
+按照它的指示，我们将计算方法改为：
+
+max_tokens=4000 - len(prompt.encode('utf-8'))
+
+
+
+接下来我们继续测试。
+
+![测试新prompt修改文章](.\img\testModifyArticle.png)
+
+![测试新prompt修改文章的结果](.\img\testModifyArticleResult.png)
+
+我们与之前prompt生成的修改结果对比：
+![之前文章修改结果](./img/articleFixResult.png)
+
+可以发现修改后的文本，更加符合我们的需求了。
+
+
+
