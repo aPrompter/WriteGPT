@@ -1373,4 +1373,4 @@ root.mainloop()
 
 ![文件夹中的可执行文件](./img/dirExeFile.png)
 
-![运行结果](.\img\packageResult.png)
+![运行结果](./img/packageResult.png)
