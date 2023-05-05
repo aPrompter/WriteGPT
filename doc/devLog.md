@@ -1037,4 +1037,97 @@ max_tokens=4000 - len(prompt.encode('utf-8'))
 
 ![测试API-key能否手动使用](./img/setApiKey.png)
 
-一次就好了
+可以看到，现在通过手动输入API-key，可以成功的调用api
+
+### api调用失败时提示
+
+> prompt:下一需求是，当网络连接失败，或其他原因导致无法调用api的时候，提示用户无法使用openai的服务
+
+> GPT:
+>
+> 为了实现这个需求，我们需要在调用OpenAI API时捕获可能的异常，并在发生异常时给用户一个友好的提示。我们可以通过修改`generate_text`函数来实现这一点。
+>
+> 在`generate_text`函数中，我们将`openai.Completion.create()`函数调用包裹在一个`try`语句中，并在`except`语句中捕获可能的异常。当发生异常时，我们可以使用`messagebox.showerror()`函数显示一个错误对话框。
+>
+> 以下是修改后的`generate_text`函数：
+>
+> ```python
+> def generate_text():
+>     prompt = input_box.get()
+>     if prompt.strip() != "":
+>         try:
+>             response = openai.Completion.create(
+>                 engine="text-davinci-003",
+>                 prompt=prompt,
+>                 max_tokens=4000,
+>                 n=1,
+>                 stop=None,
+>                 temperature=0.7,
+>             )
+>             output_text = response.choices[0].text
+>             output_box.delete(1.0, tk.END)
+>             output_box.insert(tk.END, output_text)
+>         except Exception as e:
+>             messagebox.showerror("错误", f"无法调用OpenAI API：{str(e)}")
+> ```
+>
+> 现在，如果在调用API时出现网络连接失败或其他错误，程序会捕获异常并向用户显示一个友好的错误提示。
+
+GPT给出的方案是使用try-except处理异常。报错的时候，就弹出消息框。
+
+给出的代码只有generate_text这个函数。
+
+但其实edit_text函数，也使用了。我们在这两个地方都加上提示
+
+``` python
+
+def generate_text():
+    prompt = input_box.get()
+    if prompt.strip() != "":
+        try:
+            response = openai.Completion.create(
+                engine="text-davinci-003",
+                prompt=prompt,
+                max_tokens=4000,
+                n=1,
+                stop=None,
+                temperature=0.7,
+            )
+            output_text = response.choices[0].text
+            output_box.delete(1.0, tk.END)
+            output_box.insert(tk.END, output_text)
+        except Exception as e:
+            messagebox.showerror("错误", f"无法调用OpenAI API：{str(e)}")
+
+
+def edit_text(event):
+    ctrl_pressed = event.state & 0x4  # 检查Ctrl键是否按下
+    if ctrl_pressed and event.keysym == 'q':  # 检查是否按下了Ctrl + Q
+        selected_text = output_box.get(tk.SEL_FIRST, tk.SEL_LAST)
+        if selected_text:
+            suggestion = askstring("修改建议", "请输入修改意见：")
+            if suggestion:
+                prompt = f"原文本：'{selected_text}'\n修改意见：'{suggestion}'\n根据修改意见，生成一个新的文本片段："
+                try:
+                    response = openai.Completion.create(
+                        engine="text-davinci-003",
+                        prompt=prompt,
+                        max_tokens=4000 - len(prompt.encode('utf-8')),
+                        n=1,
+                        stop=None,
+                        temperature=0.7,
+                    )
+                    new_text = response.choices[0].text
+                    if tk.messagebox.askyesno("替换确认", f"原文本：{selected_text}\n新文本：{new_text}\n是否替换？"):
+                        output_box.delete(tk.SEL_FIRST, tk.SEL_LAST)
+                        output_box.insert(tk.INSERT, new_text)
+                except Exception as e:
+                    messagebox.showerror("错误", f"无法调用OpenAI API：{str(e)}")
+
+```
+
+使用一个错误的密钥测试一下。
+
+![使用api异常](./img/useAPIError.png)
+
+现在任何调用api失败的时候，都会提示用户了。

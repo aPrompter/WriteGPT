@@ -87,17 +87,20 @@ templates = load_templates()
 def generate_text():
     prompt = input_box.get()
     if prompt.strip() != "":
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
-            max_tokens=4000,
-            n=1,
-            stop=None,
-            temperature=0.7,
-        )
-        output_text = response.choices[0].text
-        output_box.delete(1.0, tk.END)
-        output_box.insert(tk.END, output_text)
+        try:
+            response = openai.Completion.create(
+                engine="text-davinci-003",
+                prompt=prompt,
+                max_tokens=4000,
+                n=1,
+                stop=None,
+                temperature=0.7,
+            )
+            output_text = response.choices[0].text
+            output_box.delete(1.0, tk.END)
+            output_box.insert(tk.END, output_text)
+        except Exception as e:
+            messagebox.showerror("错误", f"无法调用OpenAI API：{str(e)}")
 
 
 def edit_text(event):
@@ -108,18 +111,21 @@ def edit_text(event):
             suggestion = askstring("修改建议", "请输入修改意见：")
             if suggestion:
                 prompt = f"原文本：'{selected_text}'\n修改意见：'{suggestion}'\n根据修改意见，生成一个新的文本片段："
-                response = openai.Completion.create(
-                    engine="text-davinci-003",
-                    prompt=prompt,
-                    max_tokens=4000 - len(prompt.encode('utf-8')),
-                    n=1,
-                    stop=None,
-                    temperature=0.7,
-                )
-                new_text = response.choices[0].text
-                if tk.messagebox.askyesno("替换确认", f"原文本：{selected_text}\n新文本：{new_text}\n是否替换？"):
-                    output_box.delete(tk.SEL_FIRST, tk.SEL_LAST)
-                    output_box.insert(tk.INSERT, new_text)
+                try:
+                    response = openai.Completion.create(
+                        engine="text-davinci-003",
+                        prompt=prompt,
+                        max_tokens=4000 - len(prompt.encode('utf-8')),
+                        n=1,
+                        stop=None,
+                        temperature=0.7,
+                    )
+                    new_text = response.choices[0].text
+                    if tk.messagebox.askyesno("替换确认", f"原文本：{selected_text}\n新文本：{new_text}\n是否替换？"):
+                        output_box.delete(tk.SEL_FIRST, tk.SEL_LAST)
+                        output_box.insert(tk.INSERT, new_text)
+                except Exception as e:
+                    messagebox.showerror("错误", f"无法调用OpenAI API：{str(e)}")
 
 
 def export_to_word():
