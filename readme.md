@@ -1,6 +1,6 @@
-# writeMore
+# writeGPT
 
-writeMore是一款AI写作软件，使用OpenAI提供的大语言模型API作为基础写作能力，优化了写作场景下的交互体验。
+writeGPT是一款AI写作软件，使用OpenAI提供的大语言模型API作为基础写作能力，优化了写作场景下的交互体验。
 
 项目中技术选型和代码编写都由chatGPT完成，人工只负责简单修改和调试。
 
