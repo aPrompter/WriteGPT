@@ -858,3 +858,107 @@ max_tokens=4000 - len(prompt.encode('utf-8'))
 
 
 
+### 优化布局
+
+现在的布局还是很难看。我们要求GPT帮忙优化一下布局
+
+> prompt: 
+>
+> ``` pyt
+> # 之前的源代码，这里省略
+> ```
+>
+> 优化代码，让桌面程序的布局更加合理。
+
+>GPT:
+>
+>您可以通过调整控件的尺寸、间距以及使用ttk主题库以提高应用程序的外观。这是一个优化后的代码示例：
+>
+>```python
+>import tkinter as tk
+>from tkinter import ttk
+>from tkinter.simpledialog import askstring
+>from tkinter import filedialog, messagebox
+>import openai
+>import json
+>from docx import Document
+>
+>openai.api_key = "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"
+>
+>def load_templates():
+>    # ...
+>    pass
+>
+>def save_templates():
+>    # ...
+>    pass
+>
+>def choose_template():
+>    # ...
+>    pass
+>
+>def import_template():
+>    # ...
+>    pass
+>
+>def export_template():
+>    # ...
+>    pass
+>
+>templates = load_templates()
+>
+>def generate_text():
+>    # ...
+>    pass
+>
+>def edit_text(event):
+>    # ...
+>    pass
+>
+>def export_to_word():
+>    # ...
+>    pass
+>
+>root = tk.Tk()
+>root.title("AI写作软件")
+>root.geometry("800x600")
+>
+>main_frame = ttk.Frame(root, padding="10")
+>main_frame.pack(fill=tk.BOTH, expand=True)
+>
+>template_buttons = ttk.Frame(main_frame)
+>template_buttons.pack(pady=5)
+>
+>choose_template_button = ttk.Button(template_buttons, text="选择模板", command=choose_template)
+>choose_template_button.pack(side=tk.LEFT, padx=5)
+>
+>import_template_button = ttk.Button(template_buttons, text="导入模板", command=import_template)
+>import_template_button.pack(side=tk.LEFT, padx=5)
+>
+>export_template_button = ttk.Button(template_buttons, text="导出模板", command=export_template)
+>export_template_button.pack(side=tk.LEFT, padx=5)
+>
+>input_box = ttk.Entry(main_frame, width=80)
+>input_box.pack(pady=10)
+>
+>confirm_button = ttk.Button(main_frame, text="生成文本", command=generate_text)
+>confirm_button.pack(pady=10)
+>
+>output_box = tk.Text(main_frame, wrap=tk.WORD, width=80, height=20)
+>output_box.pack(pady=10, expand=True, fill=tk.BOTH)
+>output_box.bind('<Control-Key>', edit_text)
+>
+>export_button = ttk.Button(main_frame, text="导出文件", command=export_to_word)
+>export_button.pack(pady=10)
+>
+>root.mainloop()
+>```
+>
+>这个优化后的代码调整了控件的布局，使程序的外观更加整洁。添加了`ttk.Frame`以实现更好的外观，同时使用了`fill`和`expand`选项，使得文本框能够随窗口大小调整而改变尺寸。最后，我们将所有的`tk.Button`替换为`ttk.Button`以保持一致的外观风格。
+
+优化后的布局
+
+![优化后的布局](./img/prefLayout.png)
+
+可以看到，整体布局比之前合理了。
+

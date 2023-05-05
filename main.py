@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter.simpledialog import askstring
 from tkinter import filedialog, messagebox
 import openai
@@ -120,29 +121,32 @@ root = tk.Tk()
 root.title("AI写作软件")
 root.geometry("800x600")
 
-template_buttons = tk.Frame(root)
+main_frame = ttk.Frame(root, padding="10")
+main_frame.pack(fill=tk.BOTH, expand=True)
+
+template_buttons = ttk.Frame(main_frame)
 template_buttons.pack(pady=5)
 
-choose_template_button = tk.Button(template_buttons, text="选择模板", command=choose_template)
+choose_template_button = ttk.Button(template_buttons, text="选择模板", command=choose_template)
 choose_template_button.pack(side=tk.LEFT, padx=5)
 
-import_template_button = tk.Button(template_buttons, text="导入模板", command=import_template)
+import_template_button = ttk.Button(template_buttons, text="导入模板", command=import_template)
 import_template_button.pack(side=tk.LEFT, padx=5)
 
-export_template_button = tk.Button(template_buttons, text="导出模板", command=export_template)
+export_template_button = ttk.Button(template_buttons, text="导出模板", command=export_template)
 export_template_button.pack(side=tk.LEFT, padx=5)
 
-input_box = tk.Entry(root, width=80)
+input_box = ttk.Entry(main_frame, width=80)
 input_box.pack(pady=10)
 
-confirm_button = tk.Button(root, text="生成文本", command=generate_text)
+confirm_button = ttk.Button(main_frame, text="生成文本", command=generate_text)
 confirm_button.pack(pady=10)
 
-output_box = tk.Text(root, wrap=tk.WORD, width=80, height=20)
-output_box.pack(pady=10)
+output_box = tk.Text(main_frame, wrap=tk.WORD, width=80, height=20)
+output_box.pack(pady=10, expand=True, fill=tk.BOTH)
 output_box.bind('<Control-Key>', edit_text)
 
-export_button = tk.Button(root, text="导出文件", command=export_to_word)
+export_button = ttk.Button(main_frame, text="导出文件", command=export_to_word)
 export_button.pack(pady=10)
 
 root.mainloop()
