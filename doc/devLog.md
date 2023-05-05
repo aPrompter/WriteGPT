@@ -962,3 +962,79 @@ max_tokens=4000 - len(prompt.encode('utf-8'))
 
 可以看到，整体布局比之前合理了。
 
+
+
+### API-key设置
+
+刚刚忘记将API-key设置为手动输入了。
+
+这里再补充一下，继续然GPT帮我们将功能完成
+
+> prompt：下一个需求是，在原有的应用中，去除默认的openai的api-key，改为让用户可以输入和修改自己的api-key。 
+>
+> api-key输入后，需要在下一次使用的时候，加载进来。 
+>
+> api-key相关功能并列放在最上面一行
+
+> user:
+>
+> 为了实现这个需求，我们需要对现有的代码进行以下修改：
+>
+> 1. 移除默认的OpenAI API密钥。
+> 2. 添加一个新的输入框，让用户输入他们自己的API密钥。
+> 3. 提供一个按钮，用于保存用户的API密钥。
+> 4. 在程序启动时，尝试从一个文件中读取保存的API密钥。
+> 5. 将API密钥输入框和保存按钮放在最上面一行。
+>
+> 以下是修改后的代码：
+>
+> ```python
+> import os
+> 
+> # 移除默认的OpenAI API密钥
+> # openai.api_key = "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"
+> 
+> API_KEY_FILE = 'api_key.txt'
+> 
+> 
+> def load_api_key():
+>     if os.path.exists(API_KEY_FILE):
+>         with open(API_KEY_FILE, 'r') as f:
+>             return f.read().strip()
+>     return ''
+> 
+> 
+> def save_api_key():
+>     with open(API_KEY_FILE, 'w') as f:
+>         f.write(api_key_entry.get())
+>     openai.api_key = api_key_entry.get()
+>     messagebox.showinfo("成功", "API密钥已保存。")
+> 
+> 
+> # 在程序启动时，尝试从一个文件中读取保存的API密钥
+> openai.api_key = load_api_key()
+> 
+> # 省略其他代码...
+> 
+> # 创建API密钥输入框和保存按钮
+> api_key_frame = ttk.Frame(main_frame)
+> api_key_frame.pack(pady=5)
+> 
+> ttk.Label(api_key_frame, text="API密钥：").pack(side=tk.LEFT, padx=5)
+> api_key_entry = ttk.Entry(api_key_frame, width=40)
+> api_key_entry.pack(side=tk.LEFT, padx=5)
+> api_key_entry.insert(0, openai.api_key)
+> 
+> save_api_key_button = ttk.Button(api_key_frame, text="保存API密钥", command=save_api_key)
+> save_api_key_button.pack(side=tk.LEFT, padx=5)
+> 
+> # 省略其他代码...
+> ```
+>
+> 这个修改后的代码将会在程序启动时尝试从`api_key.txt`文件中读取API密钥。如果文件不存在或者内容为空，用户需要在输入框中输入他们自己的API密钥，并点击保存按钮。
+
+把代码复制到工程中，测试一下
+
+![测试API-key能否手动使用](./img/setApiKey.png)
+
+一次就好了

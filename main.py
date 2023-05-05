@@ -5,8 +5,27 @@ from tkinter import filedialog, messagebox
 import openai
 import json
 from docx import Document
+import os
 
-openai.api_key = "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"
+API_KEY_FILE = 'api_key.txt'
+
+
+def load_api_key():
+    if os.path.exists(API_KEY_FILE):
+        with open(API_KEY_FILE, 'r') as f:
+            return f.read().strip()
+    return ''
+
+
+def save_api_key():
+    with open(API_KEY_FILE, 'w') as f:
+        f.write(api_key_entry.get())
+    openai.api_key = api_key_entry.get()
+    messagebox.showinfo("成功", "API密钥已保存。")
+
+
+# 在程序启动时，尝试从一个文件中读取保存的API密钥
+openai.api_key = load_api_key()
 
 
 def load_templates():
@@ -123,6 +142,18 @@ root.geometry("800x600")
 
 main_frame = ttk.Frame(root, padding="10")
 main_frame.pack(fill=tk.BOTH, expand=True)
+
+# 创建API密钥输入框和保存按钮
+api_key_frame = ttk.Frame(main_frame)
+api_key_frame.pack(pady=5)
+
+ttk.Label(api_key_frame, text="API密钥：").pack(side=tk.LEFT, padx=5)
+api_key_entry = ttk.Entry(api_key_frame, width=40)
+api_key_entry.pack(side=tk.LEFT, padx=5)
+api_key_entry.insert(0, openai.api_key)
+
+save_api_key_button = ttk.Button(api_key_frame, text="保存API密钥", command=save_api_key)
+save_api_key_button.pack(side=tk.LEFT, padx=5)
 
 template_buttons = ttk.Frame(main_frame)
 template_buttons.pack(pady=5)
