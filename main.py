@@ -3,8 +3,9 @@ from tkinter.simpledialog import askstring
 from tkinter import filedialog, messagebox
 import openai
 import json
+from docx import Document
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 
 def load_templates():
@@ -102,6 +103,20 @@ def edit_text(event):
                     output_box.insert(tk.INSERT, new_text)
 
 
+def export_to_word():
+    file_path = filedialog.asksaveasfilename(defaultextension=".docx",
+                                             filetypes=[("Word Document", "*.docx"), ("All Files", "*.*")])
+    if file_path:
+        content = output_box.get(1.0, tk.END).strip()
+        if content:
+            doc = Document()
+            doc.add_paragraph(content)
+            doc.save(file_path)
+            messagebox.showinfo("导出成功", f"文件已成功导出到：{file_path}")
+        else:
+            messagebox.showerror("导出失败", "输出框为空，无法导出")
+
+
 root = tk.Tk()
 root.title("AI写作软件")
 root.geometry("800x600")
@@ -127,5 +142,8 @@ confirm_button.pack(pady=10)
 output_box = tk.Text(root, wrap=tk.WORD, width=80, height=20)
 output_box.pack(pady=10)
 output_box.bind('<Control-Key>', edit_text)
+
+export_button = tk.Button(root, text="导出文件", command=export_to_word)
+export_button.pack(pady=10)
 
 root.mainloop()

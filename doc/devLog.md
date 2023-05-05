@@ -644,3 +644,110 @@ root.mainloop()
 
 
 
+### 文本导出功能
+
+接下来，我们开发文本导出功能。
+
+所以导出的文件格式设置为word
+
+> promt:我的下一个需求是，让GPT生成的内容，从输出框导出。 导出的文件格式为word。导出路径和文件名称需要让用户选择 导出按钮设置在输出框之后
+
+> GPT:为了实现这个需求，我们需要安装一个库：python-docx。您可以使用下面的命令来安装：
+>
+> ```shell
+> pip install python-docx
+> ```
+>
+> 然后在代码中，我们将使用`tkinter.filedialog`库来让用户选择文件路径和名称。以下是修改后的代码：
+>
+> ```python
+> import tkinter as tk
+> from tkinter.simpledialog import askstring
+> import tkinter.messagebox
+> import tkinter.filedialog
+> import openai
+> from docx import Document
+> 
+> openai.api_key = "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"
+> 
+> 
+> def generate_text():
+>     prompt = input_box.get()
+>     if prompt.strip() != "":
+>         response = openai.Completion.create(
+>             engine="text-davinci-003",
+>             prompt=prompt,
+>             max_tokens=4000,
+>             n=1,
+>             stop=None,
+>             temperature=0.7,
+>         )
+>         output_text = response.choices[0].text
+>         output_box.delete(1.0, tk.END)
+>         output_box.insert(tk.END, output_text)
+> 
+> 
+> def edit_text(event):
+>     # ... 省略edit_text函数的其他代码 ...
+> 
+> 
+> def export_to_word():
+>     file_path = tkinter.filedialog.asksaveasfilename(defaultextension=".docx",
+>                                                       filetypes=[("Word Document", "*.docx"), ("All Files", "*.*")])
+>     if file_path:
+>         content = output_box.get(1.0, tk.END).strip()
+>         if content:
+>             doc = Document()
+>             doc.add_paragraph(content)
+>             doc.save(file_path)
+>             tkinter.messagebox.showinfo("导出成功", f"文件已成功导出到：{file_path}")
+>         else:
+>             tkinter.messagebox.showerror("导出失败", "输出框为空，无法导出")
+> 
+> 
+> root = tk.Tk()
+> root.title("AI写作软件")
+> root.geometry("800x600")
+> 
+> input_box = tk.Entry(root, width=80)
+> input_box.pack(pady=10)
+> 
+> confirm_button = tk.Button(root, text="生成文本", command=generate_text)
+> confirm_button.pack(pady=10)
+> 
+> output_box = tk.Text(root, wrap=tk.WORD, width=80, height=20)
+> output_box.pack(pady=10)
+> output_box.bind('<Control-Key>', edit_text)
+> 
+> export_button = tk.Button(root, text="导出到Word", command=export_to_word)
+> export_button.pack(pady=10)
+> 
+> root.mainloop()
+> ```
+>
+> 在这个修改后的代码中，我们添加了一个名为`export_to_word`的函数，它会执行以下操作：
+>
+> 1. 使用`tkinter.filedialog.asksaveasfilename`函数弹出一个对话框让用户选择导出文件的路径和名称。
+> 2. 判断输出框中是否有内容，如果没有内容则弹出一个错误提示。
+> 3. 如果有内容，创建一个新的Word文档（使用python-docx库的Document类）。
+> 4. 将输出框中的内容添加到Word文档中。
+> 5. 保存Word文档到用户选择的路径。
+> 6. 弹出一个提示框告知用户文件已成功导出。
+>
+> 最后，我们在输出框下方添加了一个名为"导出到Word"的按钮，单击该按钮将调用`export_to_word`函数。
+
+GPT这次给的代码，需要调整一下。
+
+![导出文章代码问题](./img/exportFileError.png)
+
+在export_to_word函数中，将tkinter去除。
+
+
+
+接下来我们来测试一下：
+
+![导出文章](.\img\exprotFile.png)
+
+![word文件](./img/wordFile.png)
+
+可以看到，文件已经可以成功导出了。
